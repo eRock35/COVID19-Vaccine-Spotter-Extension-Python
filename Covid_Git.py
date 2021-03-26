@@ -79,7 +79,7 @@ while(loop<=totloops):
 
 	if(len(tmessage) > 100):
 		if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
-			tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/GA/?zip=' + zipcode
+			tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode
 		
 		#printing to console
 		print('Sending Message....')
