@@ -78,10 +78,12 @@ while(loop<=totloops):
 				
 				tmessage+= 'Last update time was ' + xstr(esttime.strftime("%Y-%m-%d @ %H:%M:%S")) + '\n'
 				tmessage+= '\n--------------------------------\n\n'
-
+				
+	tmessage+= 'To Stop Receiving Updates please respond with STOP'
+	
 	if(len(tmessage) > 100):
 		if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
-			tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode
+			tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode + '\nTo Stop Receiving Updates please respond with STOP'
 		
 		#printing to console
 		print('Sending Message....')
