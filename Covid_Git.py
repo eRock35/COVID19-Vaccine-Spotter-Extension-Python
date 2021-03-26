@@ -57,7 +57,7 @@ while(loop<=totloops):
 			if(d<radius): #Only looking at 
 				apptcnt=len(json_dictionary['features'][i]['properties']['appointments'])
 				tmessage+='There are '+ str(apptcnt) + ' appoinments avaliable at ' + xstr(json_dictionary['features'][i]['properties']['provider_brand_name']) + ' in ' + xstr(json_dictionary['features'][i]['properties']['city']) +', which is ' +str(d) + ' miles away\n'
-				tmessage+='Adress: ' + xstr(json_dictionary['features'][i]['properties']['address']) + ', ' + xstr(json_dictionary['features'][i]['properties']['city']) + ', ' + xstr(json_dictionary['features'][i]['properties']['state']) + ' ' + xstr(json_dictionary['features'][i]['properties']['postal_code']) + '\n'
+				tmessage+='Address: ' + xstr(json_dictionary['features'][i]['properties']['address']) + ', ' + xstr(json_dictionary['features'][i]['properties']['city']) + ', ' + xstr(json_dictionary['features'][i]['properties']['state']) + ' ' + xstr(json_dictionary['features'][i]['properties']['postal_code']) + '\n'
 				vactype=json_dictionary['features'][i]['properties']['appointment_vaccine_types']
 				vactype=[*vactype]
 				vactype=', '.join(vactype)
@@ -67,10 +67,12 @@ while(loop<=totloops):
 				appttimearray=[]
 				for ia in range(apptcnt):
 					appttimearray.append(json_dictionary['features'][i]['properties']['appointments'][ia]['time'])
-				tmessage+='Earliest appointment time is ' + min(appttimearray)[0:10] + ' @ ' + min(appttimearray)[11:16] + '\n'
-				tmessage+='Latest appointment time is ' + max(appttimearray)[0:10] + ' @ ' + max(appttimearray)[11:16] + '\n'
+				if(len(appttimearray)==0):
+					tmessage+='Could Not parse Appointment Times\n'
+				else:
+					tmessage+='Earliest appointment time is ' + min(appttimearray)[0:10] + ' @ ' + min(appttimearray)[11:16] + '\n'
+					tmessage+='Latest appointment time is ' + max(appttimearray)[0:10] + ' @ ' + max(appttimearray)[11:16] + '\n'
 				tmessage+='To schedule an appointment vist: ' + xstr(json_dictionary['features'][i]['properties']['url']) + '\n'
-
 				utctime=datetime.datetime.strptime(json_dictionary['features'][i]['properties']['appointments_last_fetched'], "%Y-%m-%dT%H:%M:%S.%f+00:00")
 				esttime=tz.fromutc(utctime)
 				
