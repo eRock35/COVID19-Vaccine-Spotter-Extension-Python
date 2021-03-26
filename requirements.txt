@@ -1,0 +1,6 @@
+###### Requirements without Version Specifiers ######`
+json
+geopy
+pytz
+requests
+twilio
