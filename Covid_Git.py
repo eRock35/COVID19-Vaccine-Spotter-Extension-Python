@@ -79,11 +79,11 @@ while(0==0):
 				
 	tmessage+= 'To Stop Receiving Updates please respond with STOP'
 	
+	if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
+		tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode + '\nTo Stop Receiving Updates please respond with STOP' 				
+
 	if (prevmessage != tmessage):
 		if(len(tmessage) > 100):
-			if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
-				tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode + '\nTo Stop Receiving Updates please respond with STOP'
-
 			#printing to console
 			print('Sending Message....')
 			print(tmessage)
@@ -94,10 +94,10 @@ while(0==0):
 			auth_token = twiloauthkey
 			client = Client(account_sid, auth_token)
 			message = client.messages.create(
-						      body=tmessage,
-						      from_=twiloassignedphone,
-						      to=phone
-						  )
+			                              body=tmessage,
+			                              from_=twiloassignedphone,
+			                              to=phone
+			                          )
 
 			print(message.sid)
 		else:
