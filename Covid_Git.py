@@ -25,17 +25,15 @@ phone = '+1' + <''># Send to Phone Number
 home = <latitude>, <longtitude> # You can find lat long from google maps by typing in address and right clicking pin that gets dropped
 tz = pytz.timezone("US/Eastern") # Time Zone you can set to Central Eastern etc
 radius=20 # Radius you want from your lat long location
-totloops=96 # How many total loops you want to run in program
-sleeptime=1800 # Time to sleep between loops 
+sleeptime=5 # Time to sleep between loops 
 state=<'XX'> #State Code you want to look at ie GA needs to be uppercase
 zipcode=<'00000'>#Used just incase text string is to long to send full message 1600 Chars
 twilosid=<'xxxxx'>
 twiloauthkey=<'xxxx'>
 twiloassignedphone=<'xxxx'>
+prevmessage=''
 
-loop=0
-
-while(loop<=totloops):
+while(0==0):
 
 	# Get Reques to grab data from vaccinespotter
 	url='https://www.vaccinespotter.org/api/v0/states/'+ state + '.json' 
@@ -81,27 +79,29 @@ while(loop<=totloops):
 				
 	tmessage+= 'To Stop Receiving Updates please respond with STOP'
 	
-	if(len(tmessage) > 100):
-		if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
-			tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode + '\nTo Stop Receiving Updates please respond with STOP'
-		
-		#printing to console
-		print('Sending Message....')
-		print(tmessage)
+	if (prevmessage != tmessage):
+		if(len(tmessage) > 100):
+			if(len(tmessage)>1599): #1600 is max char length for twilo so just sending generic message if threshold is met
+				tmessage='******Covid-19 Vaccine Avaliabilty Update******\nThere are a lot of vaccines avaliable near by vist: https://www.vaccinespotter.org/' + state + '/?zip=' + zipcode + '\nTo Stop Receiving Updates please respond with STOP'
 
-		#Twilo API to send text 
+			#printing to console
+			print('Sending Message....')
+			print(tmessage)
 
-		account_sid = twilosid
-		auth_token = twiloauthkey
-		client = Client(account_sid, auth_token)
-		message = client.messages.create(
-		                              body=tmessage,
-		                              from_=twiloassignedphone,
-		                              to=phone
-		                          )
+			#Twilo API to send text 
 
-		print(message.sid)
+			account_sid = twilosid
+			auth_token = twiloauthkey
+			client = Client(account_sid, auth_token)
+			message = client.messages.create(
+						      body=tmessage,
+						      from_=twiloassignedphone,
+						      to=phone
+						  )
+
+			print(message.sid)
+		else:
+			print('No Vaccines around')
 	else:
-		print('No Vaccines around')
-	loop+1
+		print('No Informative updates')
 	time.sleep(sleeptime) #Sleeping
