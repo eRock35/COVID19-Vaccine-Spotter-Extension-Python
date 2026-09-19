@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.key.json
+
+# Never commit — contains real family PII (phone numbers, rental/Airbnb
+# confirmation numbers, host contact info, exact travel dates). This is a
+# PUBLIC repo. See docs/gcp-deployment.md for where the real source lives
+# and how it actually gets deployed.
+vacation/
