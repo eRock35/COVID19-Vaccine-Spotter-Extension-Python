@@ -136,32 +136,61 @@ approach, confirmed reachable through the sandbox's egress proxy:
 - `Dockerfile` — `node:20-slim`, `npm install --omit=dev`, `node server.js` on
   `$PORT` (defaults 8080, matches Cloud Run's convention).
 
-## Known blocker as of this writing
+## Deployed (as of 2026-09-20)
 
-The deployer service account (`cover-sheet-deployer@...`) does **not** have
-enough IAM permission to: enable APIs itself (`serviceusage.services.enable`),
-create an Artifact Registry repository (`artifactregistry.repositories.create`),
-or call the Cloud Build API. Earlier IAM grants this session (e.g. Storage
-Admin) were done by the user through the IAM console UI, not by this service
-account granting itself anything — the account has never actually had
-Artifact Registry Admin, Cloud Build Editor, or Service Usage Admin, despite
-earlier assumptions in-session that it did. Needed next: grant the service
-account `roles/artifactregistry.admin`, `roles/cloudbuild.builds.editor`, and
-`roles/serviceusage.serviceUsageAdmin` via
-`https://console.cloud.google.com/iam-admin/iam?project=metal-celerity-236019`
-(pencil icon on the `cover-sheet-deployer@...` row → Add another role → search
-each by name → Save). Once granted, the rest of the deploy (Artifact Registry
-repo → Cloud Build → Cloud Run → domain mapping) can proceed without further
-IAM back-and-forth.
+The IAM blocker below was resolved (user granted the three roles). Deploy
+pipeline ran successfully end to end:
 
-## Still to do after that
+- Artifact Registry Docker repo: `erik-projects` in `us-central1`
+  (`us-central1-docker.pkg.dev/metal-celerity-236019/erik-projects`)
+- GCS bucket `metal-celerity-236019-cb-source` — Cloud Build source staging
+  (tarball uploads land here; fine to let old objects accumulate/clean up
+  later, they're cheap)
+- Cloud Build build succeeded, pushed `cover-sheet:latest` to that repo
+- Cloud Run service `cover-sheet` in `us-central1`, public
+  (`roles/run.invoker` granted to `allUsers`), live at:
+  - `https://cover-sheet-u4h4ftn3fa-uc.a.run.app`
+  - `https://cover-sheet-717055813878.us-central1.run.app`
+  - Cloud Run reports the revision `Ready` (routes + config both
+    `CONDITION_SUCCEEDED`), but **this sandbox's egress proxy blocks
+    `*.run.app`** the same way it blocks `strongtechnicalconsulting.com` — a
+    real browser hit against these URLs has not been confirmed from inside a
+    session. Ask the user to check, or use `mcp__Claude_Browser__*` /
+    Claude in Chrome tools if available in a future session.
+  - Env vars: `GOOGLE_CLOUD_PROJECT`, `FIRESTORE_DATABASE_ID=cover-sheet`, plus
+    `SITE_LOGIN_USERNAME` / `SITE_LOGIN_PASSWORD` / `ANTHROPIC_API_KEY` wired
+    as Secret Manager secret refs (`latest` version), not committed anywhere.
 
-- Deploy to Cloud Run, wire the three secrets as env vars.
-- Map `coversheet.strongtechnicalconsulting.com` to the Cloud Run service
-  (Cloud Run domain mapping) and hand the user the DNS records it returns.
+### Known compromise: runtime service account
+
+Cloud Run's `serviceAccount` is currently set to
+`cover-sheet-deployer@metal-celerity-236019.iam.gserviceaccount.com` — the
+same broad-privilege account used for deploys (Artifact Registry Admin, Cloud
+Build Editor, Service Usage Admin, Storage Admin, etc.), **not** a scoped-down
+runtime identity. The right fix is a dedicated `cover-sheet-runtime@...`
+service account with only `roles/datastore.user` and
+`roles/secretmanager.secretAccessor` on the three secrets — but the deployer
+account itself lacks `iam.serviceAccounts.create`, so this needs either (a)
+the user grants the deployer account `roles/iam.serviceAccountAdmin` (or just
+creates `cover-sheet-runtime@...` directly in the IAM console and grants those
+two roles), or (b) the user creates it by hand. Until then, a compromise of
+the running container has more GCP blast radius than it should. Flagged, not
+silently left — fix this before this app is trusted with anything higher
+stakes than it already has.
+
+## Still to do
+
+- **Domain mapping**: map `coversheet.strongtechnicalconsulting.com` to the
+  `cover-sheet` Cloud Run service (Cloud Run Domain Mappings API) and hand the
+  user the DNS records it returns, for them to add at their registrar.
+- **Runtime service account** — see "Known compromise" above.
 - Replace the `strongtechnicalconsulting.com` root GCS bucket content with the
   "Erik's Projects" landing page.
 - Cloud Scheduler job(s) hitting `/api/research/refresh` on a cadence,
   replicating the old CCR-trigger cadence from the Artifact version (not yet
   scoped into or out of "streamlined v1" — treat as a fast-follow alongside
   chat/asks-cross-linking unless the user says otherwise).
+- Seed the `games` Firestore collection — the app is deployed but there's no
+  game data in it yet, so Today's Card / All Games will render empty until
+  something populates `games` (manually, or via the deferred Cloud Scheduler
+  research job).
